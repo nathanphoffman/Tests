@@ -69,19 +69,42 @@ import * as THREE from 'three';
 					];
 
 				};
+        
+				const urls2 = genCubeUrls( 'img/', '.png' );
+                console.log(urls2);
 
-				const urls = genCubeUrls( 'img/', '.png' );
+                const urls = [...Array(6)].map(x=>"img/starfield.png");
 
 				new THREE.CubeTextureLoader().load( urls, function ( cubeTexture ) {
 
-					scene.background = cubeTexture;
+                    const color2 = new THREE.Color( 0xffffff );
+					//scene.background = cubeTexture;
+                    scene.background = color2;
 
 					lightProbe.copy( LightProbeGenerator.fromCubeTexture( cubeTexture ) );
 					lightProbe.intensity = API.lightProbeIntensity;
 					lightProbe.position.set( - 10, 0, 0 ); // position not used in scene lighting calculations (helper honors the position, however)
 
-					const geometry = new THREE.SphereGeometry( 5, 64, 32 );
+					//const geometry = new THREE.SphereGeometry( 5, 64, 32 );
+
+
+
 					//const geometry = new THREE.TorusKnotGeometry( 4, 1.5, 256, 32, 2, 3 );
+
+                    const geometry = new THREE.BufferGeometry();
+                    // create a simple square shape. We duplicate the top left and bottom right
+                    // vertices because each vertex needs to appear once per triangle.
+                    const vertices = new Float32Array( [
+                        -1.0, -1.0,  1.0, // v0
+                        5.0, -1.0,  4, // v1
+                        1.0,  1.0,  1.0, // v2
+                        1.0,  1.0,  1.0, // v3
+                        -1.0,  1.0,  1.0, // v4
+                        -1.0, -1.0,  1.0  // v5
+                    ] );
+                    // itemSize = 3 because there are 3 values (components) per vertex
+                    geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+
 
 					const material = new THREE.MeshStandardMaterial( {
 						color: 0xffffff,
@@ -96,8 +119,8 @@ import * as THREE from 'three';
 					scene.add( mesh );
 
 					// helper
-					const helper = new LightProbeHelper( lightProbe, 1 );
-					scene.add( helper );
+					//const helper = new LightProbeHelper( lightProbe, 1 );
+					//scene.add( helper );
 
 					render();
 
