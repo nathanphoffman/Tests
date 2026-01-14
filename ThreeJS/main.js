@@ -102,13 +102,18 @@ function init() {
         }
 
         function getRandomInteger(min, max) {
-            return Math.floor(Math.random() * (max - min)) + min;
+            return Math.floor(Math.random() * (max + 1 - min)) + (min);
         }
 
+            function getOneToXArray(n) {
+                return Array(n).fill(null).map((_, i) => i);
+            }
 
-        function renderSpheroid() {
-            const radius = getRandomInteger(2, 6);
-            const detail = 3;
+
+        const detail = 4;
+
+        function renderSpheroid(radius) {
+
             const distanceLimit = Number(radius / (detail));
 
             //const geometry = new THREE.IcosahedronGeometry(1, 1);
@@ -136,7 +141,7 @@ function init() {
                     //console.log(distance);
 
                     console.log("distance limit is ", distanceLimit);
-                    if (distance < distanceLimit) {
+                    if (distance < distanceLimit/4) {
                         xDelta += _xpos;
                         yDelta += _ypos;
                         zDelta += _zpos;
@@ -153,11 +158,6 @@ function init() {
                 const zComponent = Math.exp((z2 - z1), 2);
 
                 return Math.sqrt(xComponent + yComponent + zComponent);
-            }
-
-
-            function getOneToXArray(n) {
-                return Array(n).fill(null).map((_, i) => i);
             }
 
             function randomForLoop(iterations, fn) {
@@ -223,7 +223,7 @@ function init() {
                 let ypos = 0;
                 let zpos = 0;
 
-                const roughness = 0.01 * getRandomInteger(0, getRandomInteger(1, 10));
+                const roughness = 0.005 * getRandomInteger(getRandomInteger(0, 2), getRandomInteger(2, 100/radius));
                 const { xDelta, yDelta, zDelta } = getAdjustmentNearMatchedPosition(x, y, z);
 
                 //.log(xDelta, yDelta, zDelta);
@@ -240,10 +240,10 @@ function init() {
                     else return pos;
                 }
 
-                const maxLimit = (radius / detail) / 3;
+                const maxLimit = (radius / detail) / 4;
 
                 setPosition(
-                    limit(xpos, Math.random() * maxLimit * 3), limit(ypos, Math.random() * maxLimit * 3), limit(zpos, Math.random() * maxLimit * 3)
+                    limit(xpos, Math.random() * maxLimit * 2), limit(ypos, Math.random() * maxLimit * 2), limit(zpos, Math.random() * maxLimit * 2)
                 );
 
             });
@@ -259,11 +259,8 @@ function init() {
                 envMapIntensity: API.envMapIntensity,
             });
 
-            mesh = new THREE.Mesh(geometry, material);
-            scene.add(mesh);
+            return new THREE.Mesh(geometry, material);
         }
-
-        renderSpheroid();
 
         function getRandomHexColor() {
             // Generate random values for red, green, and blue
@@ -278,9 +275,12 @@ function init() {
             return hexColor;
         }
 
-        function renderRings() {
+        function renderRings(radius) {
 
-            const geometry2 = new THREE.RingGeometry(10, 20, 32);
+            const ringDistance = radius * 3 + getRandomInteger(1, radius+1);
+            const ringThickness = 1 + getRandomInteger(1, radius * 5);
+
+            const geometry2 = new THREE.RingGeometry(ringDistance, ringThickness, 32);
             const material2 = new THREE.MeshBasicMaterial({ color: getRandomHexColor(), side: THREE.DoubleSide, opacity: 0.25, transparent: true });
             const mesh2 = new THREE.Mesh(geometry2, material2);
             mesh2.rotation.x = Math.PI * Math.random();
@@ -290,7 +290,33 @@ function init() {
 
         }
 
-        renderRings();
+        const planetRadius = getRandomInteger(2, 6);
+        const planet = renderSpheroid(planetRadius);
+        scene.add(planet);
+
+        const d6 = getRandomInteger(1, 6);
+        console.log(d6);
+        if (d6 === 6) renderRings(planetRadius);
+
+        const d62 = getRandomInteger(1, 4);
+        if (d62 < planetRadius) {
+            getOneToXArray(d62).forEach((i)=>renderMoon(i));
+        }
+    
+        function renderMoon(idx) {
+            const moonRadius = getRandomInteger(1, getRandomInteger(1,planetRadius-1))
+            const moon = renderSpheroid(moonRadius);
+
+            const newPosition = planetRadius*2 + moonRadius*2;
+
+            if(idx === 1) moon.position.x = newPosition;
+            else if(idx === 2) moon.position.x = -1*newPosition;
+            else if(idx === 3) moon.position.z = newPosition;
+            else if(idx === 4) moon.position.z = -1*newPosition;
+
+            scene.add(moon);
+        }
+
 
         /*
                 setTriangle([
@@ -330,6 +356,26 @@ function onWindowResize() {
 
 function render() {
 
-    renderer.render(scene, camera);
 
+    renderer.render(scene, camera);
+/*
+    const postProcessing = new THREE.PostProcessing( renderer );
+    const scenePass = pass( scene, camera );
+    // outline parameter
+    const edgeStrength = uniform( 3.0 );
+    const edgeGlow = uniform( 0.0 );
+    const edgeThickness = uniform( 1.0 );
+    const visibleEdgeColor = uniform( new THREE.Color( 0xffffff ) );
+    const hiddenEdgeColor = uniform( new THREE.Color( 0x4e3636 ) );
+    outlinePass = outline( scene, camera, {
+        selectedObjects,
+        edgeGlow,
+        edgeThickness
+    } );
+    // compose custom outline
+    const { visibleEdge, hiddenEdge } = outlinePass;
+    const outlineColor = visibleEdge.mul( visibleEdgeColor ).add( hiddenEdge.mul( hiddenEdgeColor ) ).mul( edgeStrength );
+    postProcessing.outputNode = outlineColor.add( scenePass );
+
+*/
 }
