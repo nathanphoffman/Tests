@@ -103,10 +103,12 @@ function init() {
 
         function renderSpheroid() {
             const radius = 5;
+            const detail = 3;
+
             //const geometry = new THREE.IcosahedronGeometry(1, 1);
             //const geometry = new THREE.TorusKnotGeometry( 4, 1.5, 256, 32, 2, 3 );
             //const geometry = new THREE.SphereGeometry(5, 64, 32);
-            const geometry = new THREE.IcosahedronGeometry(radius, 4);
+            const geometry = new THREE.IcosahedronGeometry(radius, detail);
 
             const positions = geometry.attributes.position;
             const vertexCount = positions.count;
@@ -114,11 +116,68 @@ function init() {
 
             let processed = []; // {x,y,z,xpos,ypos,zpos}
 
-            function getProcessed(x,y,z) {
+            function getRecordsProcessedAt(x,y,z) {
                 return processed.filter((record)=>record.x === x && record.y === y && record.z === z);
             }
 
-            for (let i = 0; i < vertexCount; i++) {
+            function getAdjustmentNearMatchedPosition(x1,y1,z1) {
+                let xDelta = 0;
+                let yDelta = 0;
+                let zDelta = 0;
+
+                const matchedPositions = processed.filter(({x,y,z, _xpos, _ypos, _zpos})=>{
+                    const distance = getDistanceBetweenPoints({x1,z1,y1,x2: x, y2: y, z2: z});
+                    //console.log(distance);
+                    const distanceLimit = Number(radius/(detail));
+                    console.log("distance limit is ", distanceLimit);
+                    if(distance < distanceLimit) {
+                        xDelta += _xpos;
+                        yDelta += _ypos;
+                        zDelta += _zpos;
+                    }
+                });
+
+                return {xDelta, yDelta, zDelta};
+            }
+
+            function getDistanceBetweenPoints({x1,x2,y1,y2,z1,z2}) {
+
+                const xComponent = Math.exp((x2-x1),2);
+                const yComponent = Math.exp((y2-y1),2);
+                const zComponent = Math.exp((z2-z1),2);
+
+                return Math.sqrt(xComponent + yComponent + zComponent);
+            }
+
+            function getRandomInteger(min, max) {
+                return Math.floor(Math.random()*(max-min)) + min;
+            }
+
+            function getOneToXArray(n) {
+                return Array(n).fill(null).map((_, i) => i);
+            }
+
+            function randomForLoop(iterations, fn) {
+                let iterator = getOneToXArray(iterations);
+                //console.log(iterator.length);
+                let trueSafetySatisfies = 0;
+
+                while(trueSafetySatisfies++ < 10000) {
+
+                    const randomIndex = getRandomInteger(0,iterator.length-1);
+                    //console.log(randomIndex);
+
+                    const selectedPosition = iterator[randomIndex];
+                    iterator.splice(randomIndex, 1);
+                    fn(selectedPosition);
+                    if(iterator.length === 0) break;
+                }
+            }
+
+
+            randomForLoop(10,(idx)=>console.log(idx));
+
+            randomForLoop(vertexCount, (i)=>{
 
                 //console.log(vertexCount);
 
@@ -134,12 +193,14 @@ function init() {
                     processed.push({x,y,z,_xpos, _ypos, _zpos});
                 }
 
-                const records = getProcessed(x,y,z);
+                const records = getRecordsProcessedAt(x,y,z);
                 if(records.length > 0) {
-                    console.log("match found");
                     const record = records[0];
+
+                    // every vertex is joined by several polygons, if the same point that multiple polygons is shared has been updated
+                    // we must move all matching polygon corners to that new position to prevent holes
                     setPosition(record._xpos, record._ypos, record._zpos);
-                    continue;
+                    return;
                 }
 
 /*
@@ -155,27 +216,35 @@ function init() {
                 let ypos = 0;
                 let zpos = 0;
 
+                const ultrasmooth = 0.01;
                 const smooth = 0.02;
-                const normal = 0.05;
-                const bumpy = 0.15;
+                const normal = 0.04;
+                const bumpy = 0.05;
 
-                const roughness = smooth;
+                const roughness = bumpy;
 
-                if (i % getRandom() !== 0) xpos +=  roughness*getRandom();
-                if (i % getRandom() !== 0) ypos +=  roughness*getRandom();
-                if (i % getRandom() !== 0) zpos +=  roughness*getRandom();
+                const {xDelta, yDelta, zDelta} = getAdjustmentNearMatchedPosition(x,y,z);
+
+                //.log(xDelta, yDelta, zDelta);
+
+                if (i % getRandom() !== 0) xpos +=  roughness*getRandom()*xDelta + roughness*getRandom()-roughness*getRandom();
+                if (i % getRandom() !== 0) ypos +=  roughness*getRandom()*yDelta + roughness*getRandom()-roughness*getRandom();
+                if (i % getRandom() !== 0) zpos +=  roughness*getRandom()*zDelta + roughness*getRandom()-roughness*getRandom();
+
 
                 setPosition(
                     xpos,ypos,zpos
                 );
 
-            }
+            });
+
+            let hexColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
             const material = new THREE.MeshStandardMaterial({
                 side: THREE.DoubleSide,
-                color: 0xffffff,
+                color: hexColor,
                 metalness: 0,
-                roughness: 0,
+                roughness: 5,
                 envMap: cubeTexture,
                 envMapIntensity: API.envMapIntensity,
             });
