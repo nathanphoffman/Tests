@@ -101,9 +101,15 @@ function init() {
             scene.add(mesh);
         }
 
+        function getRandomInteger(min, max) {
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
+
         function renderSpheroid() {
-            const radius = 5;
+            const radius = getRandomInteger(2, 6);
             const detail = 3;
+            const distanceLimit = Number(radius / (detail));
 
             //const geometry = new THREE.IcosahedronGeometry(1, 1);
             //const geometry = new THREE.TorusKnotGeometry( 4, 1.5, 256, 32, 2, 3 );
@@ -116,42 +122,39 @@ function init() {
 
             let processed = []; // {x,y,z,xpos,ypos,zpos}
 
-            function getRecordsProcessedAt(x,y,z) {
-                return processed.filter((record)=>record.x === x && record.y === y && record.z === z);
+            function getRecordsProcessedAt(x, y, z) {
+                return processed.filter((record) => record.x === x && record.y === y && record.z === z);
             }
 
-            function getAdjustmentNearMatchedPosition(x1,y1,z1) {
+            function getAdjustmentNearMatchedPosition(x1, y1, z1) {
                 let xDelta = 0;
                 let yDelta = 0;
                 let zDelta = 0;
 
-                const matchedPositions = processed.filter(({x,y,z, _xpos, _ypos, _zpos})=>{
-                    const distance = getDistanceBetweenPoints({x1,z1,y1,x2: x, y2: y, z2: z});
+                const matchedPositions = processed.filter(({ x, y, z, _xpos, _ypos, _zpos }) => {
+                    const distance = getDistanceBetweenPoints({ x1, z1, y1, x2: x, y2: y, z2: z });
                     //console.log(distance);
-                    const distanceLimit = Number(radius/(detail));
+
                     console.log("distance limit is ", distanceLimit);
-                    if(distance < distanceLimit) {
+                    if (distance < distanceLimit) {
                         xDelta += _xpos;
                         yDelta += _ypos;
                         zDelta += _zpos;
                     }
                 });
 
-                return {xDelta, yDelta, zDelta};
+                return { xDelta, yDelta, zDelta };
             }
 
-            function getDistanceBetweenPoints({x1,x2,y1,y2,z1,z2}) {
+            function getDistanceBetweenPoints({ x1, x2, y1, y2, z1, z2 }) {
 
-                const xComponent = Math.exp((x2-x1),2);
-                const yComponent = Math.exp((y2-y1),2);
-                const zComponent = Math.exp((z2-z1),2);
+                const xComponent = Math.exp((x2 - x1), 2);
+                const yComponent = Math.exp((y2 - y1), 2);
+                const zComponent = Math.exp((z2 - z1), 2);
 
                 return Math.sqrt(xComponent + yComponent + zComponent);
             }
 
-            function getRandomInteger(min, max) {
-                return Math.floor(Math.random()*(max-min)) + min;
-            }
 
             function getOneToXArray(n) {
                 return Array(n).fill(null).map((_, i) => i);
@@ -162,22 +165,26 @@ function init() {
                 //console.log(iterator.length);
                 let trueSafetySatisfies = 0;
 
-                while(trueSafetySatisfies++ < 10000) {
+                while (trueSafetySatisfies++ < 10000) {
 
-                    const randomIndex = getRandomInteger(0,iterator.length-1);
+                    const randomIndex = getRandomInteger(0, iterator.length - 1);
                     //console.log(randomIndex);
 
                     const selectedPosition = iterator[randomIndex];
                     iterator.splice(randomIndex, 1);
                     fn(selectedPosition);
-                    if(iterator.length === 0) break;
+                    if (iterator.length === 0) break;
                 }
             }
 
 
-            randomForLoop(10,(idx)=>console.log(idx));
+            function randomColor() {
+                return Math.floor(Math.random() * 16777215).toString(16);
+            }
 
-            randomForLoop(vertexCount, (i)=>{
+            randomForLoop(10, (idx) => console.log(idx));
+
+            randomForLoop(vertexCount, (i) => {
 
                 //console.log(vertexCount);
 
@@ -190,11 +197,11 @@ function init() {
                         i, x + _xpos, y + _ypos, z + _zpos
                     );
 
-                    processed.push({x,y,z,_xpos, _ypos, _zpos});
+                    processed.push({ x, y, z, _xpos, _ypos, _zpos });
                 }
 
-                const records = getRecordsProcessedAt(x,y,z);
-                if(records.length > 0) {
+                const records = getRecordsProcessedAt(x, y, z);
+                if (records.length > 0) {
                     const record = records[0];
 
                     // every vertex is joined by several polygons, if the same point that multiple polygons is shared has been updated
@@ -203,11 +210,11 @@ function init() {
                     return;
                 }
 
-/*
-                const nx = x / radius;
-                const ny = y / radius;
-                const nz = z / radius;
-*/
+                /*
+                                const nx = x / radius;
+                                const ny = y / radius;
+                                const nz = z / radius;
+                */
                 function getRandom() {
                     return Math.ceil(Math.random() * 10) - 5;
                 }
@@ -216,33 +223,36 @@ function init() {
                 let ypos = 0;
                 let zpos = 0;
 
-                const ultrasmooth = 0.01;
-                const smooth = 0.02;
-                const normal = 0.04;
-                const bumpy = 0.05;
-
-                const roughness = bumpy;
-
-                const {xDelta, yDelta, zDelta} = getAdjustmentNearMatchedPosition(x,y,z);
+                const roughness = 0.01 * getRandomInteger(0, getRandomInteger(1, 10));
+                const { xDelta, yDelta, zDelta } = getAdjustmentNearMatchedPosition(x, y, z);
 
                 //.log(xDelta, yDelta, zDelta);
 
-                if (i % getRandom() !== 0) xpos +=  roughness*getRandom()*xDelta + roughness*getRandom()-roughness*getRandom();
-                if (i % getRandom() !== 0) ypos +=  roughness*getRandom()*yDelta + roughness*getRandom()-roughness*getRandom();
-                if (i % getRandom() !== 0) zpos +=  roughness*getRandom()*zDelta + roughness*getRandom()-roughness*getRandom();
+                xpos += roughness * getRandom() * xDelta + roughness * getRandom() - roughness * getRandom();
+                ypos += roughness * getRandom() * yDelta + roughness * getRandom() - roughness * getRandom();
+                zpos += roughness * getRandom() * zDelta + roughness * getRandom() - roughness * getRandom();
 
+                console.log(xpos, ypos, zpos);
+
+                function limit(pos, maxLimit) {
+                    if (pos > maxLimit) return maxLimit;
+                    else if (pos < -1 * maxLimit) return -1 * maxLimit;
+                    else return pos;
+                }
+
+                const maxLimit = (radius / detail) / 3;
 
                 setPosition(
-                    xpos,ypos,zpos
+                    limit(xpos, Math.random() * maxLimit * 3), limit(ypos, Math.random() * maxLimit * 3), limit(zpos, Math.random() * maxLimit * 3)
                 );
 
             });
 
-            let hexColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+
 
             const material = new THREE.MeshStandardMaterial({
                 side: THREE.DoubleSide,
-                color: hexColor,
+                color: `#${randomColor()}`,
                 metalness: 0,
                 roughness: 5,
                 envMap: cubeTexture,
@@ -254,6 +264,33 @@ function init() {
         }
 
         renderSpheroid();
+
+        function getRandomHexColor() {
+            // Generate random values for red, green, and blue
+            const randomRed = Math.floor(Math.random() * 256);
+            const randomGreen = Math.floor(Math.random() * 256);
+            const randomBlue = Math.floor(Math.random() * 256);
+
+            // Combine them into a single number
+            const hexColor = (randomRed << 16) | (randomGreen << 8) | randomBlue;
+
+            // Return the color as a number in the format 0xRRGGBB
+            return hexColor;
+        }
+
+        function renderRings() {
+
+            const geometry2 = new THREE.RingGeometry(10, 20, 32);
+            const material2 = new THREE.MeshBasicMaterial({ color: getRandomHexColor(), side: THREE.DoubleSide, opacity: 0.25, transparent: true });
+            const mesh2 = new THREE.Mesh(geometry2, material2);
+            mesh2.rotation.x = Math.PI * Math.random();
+            mesh2.rotation.y = Math.PI * Math.random();
+            mesh2.rotation.z = Math.PI * Math.random();
+            scene.add(mesh2);
+
+        }
+
+        renderRings();
 
         /*
                 setTriangle([
@@ -274,33 +311,6 @@ function init() {
 
     });
 
-
-    // gui
-    gui = new GUI({ title: 'Intensity' });
-
-    gui.add(API, 'lightProbeIntensity', 0, 1, 0.02)
-        .name('light probe')
-        .onChange(function () {
-
-            lightProbe.intensity = API.lightProbeIntensity; render();
-
-        });
-
-    gui.add(API, 'directionalLightIntensity', 0, 1, 0.02)
-        .name('directional light')
-        .onChange(function () {
-
-            directionalLight.intensity = API.directionalLightIntensity; render();
-
-        });
-
-    gui.add(API, 'envMapIntensity', 0, 1, 0.02)
-        .name('envMap')
-        .onChange(function () {
-
-            mesh.material.envMapIntensity = API.envMapIntensity; render();
-
-        });
 
     // listener
     window.addEventListener('resize', onWindowResize);
