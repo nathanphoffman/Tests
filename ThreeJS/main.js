@@ -85,30 +85,13 @@ function init() {
         lightProbe.position.set(- 10, 0, 0); // position not used in scene lighting calculations (helper honors the position, however)
 
 
-        function setTriangle(arr) {
-            const material = new THREE.MeshBasicMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
-            //const geometry = new THREE.TorusKnotGeometry( 4, 1.5, 256, 32, 2, 3 );
-
-            const geometry = new THREE.BufferGeometry();
-            // create a simple square shape. We duplicate the top left and bottom right
-            // vertices because each vertex needs to appear once per triangle.
-            const vertices = new Float32Array(arr);
-            console.log(arr.length);
-            // itemSize = 3 because there are 3 values (components) per vertex
-            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, Math.round(3)));
-
-            const mesh = new THREE.Mesh(geometry, material);
-            scene.add(mesh);
-        }
-
         function getRandomInteger(min, max) {
             return Math.floor(Math.random() * (max + 1 - min)) + (min);
         }
 
-            function getOneToXArray(n) {
-                return Array(n).fill(null).map((_, i) => i);
-            }
-
+        function getOneToXArray(n) {
+            return Array(n).fill(null).map((_, i) => i);
+        }
 
         const detail = 4;
 
@@ -141,7 +124,7 @@ function init() {
                     //console.log(distance);
 
                     console.log("distance limit is ", distanceLimit);
-                    if (distance < distanceLimit/4) {
+                    if (distance < distanceLimit / 4) {
                         xDelta += _xpos;
                         yDelta += _ypos;
                         zDelta += _zpos;
@@ -223,7 +206,7 @@ function init() {
                 let ypos = 0;
                 let zpos = 0;
 
-                const roughness = 0.005 * getRandomInteger(getRandomInteger(0, 2), getRandomInteger(2, 100/radius));
+                const roughness = 0.005 * getRandomInteger(getRandomInteger(0, 2), getRandomInteger(2, 100 / radius));
                 const { xDelta, yDelta, zDelta } = getAdjustmentNearMatchedPosition(x, y, z);
 
                 //.log(xDelta, yDelta, zDelta);
@@ -277,7 +260,7 @@ function init() {
 
         function renderRings(radius) {
 
-            const ringDistance = radius * 3 + getRandomInteger(1, radius+1);
+            const ringDistance = radius * 3 + getRandomInteger(1, radius + 1);
             const ringThickness = 1 + getRandomInteger(1, radius * 5);
 
             const geometry2 = new THREE.RingGeometry(ringDistance, ringThickness, 32);
@@ -290,7 +273,7 @@ function init() {
 
         }
 
-        const planetRadius = getRandomInteger(2, 6);
+        const planetRadius = getRandomInteger(1, 4);
         const planet = renderSpheroid(planetRadius);
         scene.add(planet);
 
@@ -298,21 +281,41 @@ function init() {
         console.log(d6);
         if (d6 === 6) renderRings(planetRadius);
 
-        const d62 = getRandomInteger(1, 4);
+        const d62 = getRandomInteger(1, getRandomInteger(1,3));
         if (d62 < planetRadius) {
-            getOneToXArray(d62).forEach((i)=>renderMoon(i));
+            getOneToXArray(d62).forEach((i) => renderMoon(i));
         }
-    
+
         function renderMoon(idx) {
-            const moonRadius = getRandomInteger(1, getRandomInteger(1,planetRadius-1))
+            const moonRadius = getRandomInteger(1, getRandomInteger(1, planetRadius - 1))
             const moon = renderSpheroid(moonRadius);
 
-            const newPosition = planetRadius*2 + moonRadius*2;
+            const newPosition = planetRadius * 2 + moonRadius * 2;
 
-            if(idx === 1) moon.position.x = newPosition;
-            else if(idx === 2) moon.position.x = -1*newPosition;
-            else if(idx === 3) moon.position.z = newPosition;
-            else if(idx === 4) moon.position.z = -1*newPosition;
+            function moonOffset() {
+                return 1 - getRandomInteger(1, 10) / 2;
+            }
+
+            if (idx === 1) {
+                moon.position.x = newPosition;
+                moon.position.y = moon.position.y += moonOffset();
+                moon.position.z = moon.position.z += moonOffset();
+            }
+            else if (idx === 2) {
+                moon.position.x = -1 * newPosition;
+                moon.position.y = moon.position.y += moonOffset();
+                moon.position.z = moon.position.z += moonOffset();
+            }
+            else if (idx === 3) {
+                moon.position.z = newPosition;
+                moon.position.y = moon.position.y += moonOffset();
+                moon.position.x = moon.position.x += moonOffset();
+            }
+            else if (idx === 4) {
+                moon.position.z = -1 * newPosition;
+                moon.position.y = moon.position.y += moonOffset();
+                moon.position.x = moon.position.x += moonOffset();
+            }
 
             scene.add(moon);
         }
@@ -358,24 +361,24 @@ function render() {
 
 
     renderer.render(scene, camera);
-/*
-    const postProcessing = new THREE.PostProcessing( renderer );
-    const scenePass = pass( scene, camera );
-    // outline parameter
-    const edgeStrength = uniform( 3.0 );
-    const edgeGlow = uniform( 0.0 );
-    const edgeThickness = uniform( 1.0 );
-    const visibleEdgeColor = uniform( new THREE.Color( 0xffffff ) );
-    const hiddenEdgeColor = uniform( new THREE.Color( 0x4e3636 ) );
-    outlinePass = outline( scene, camera, {
-        selectedObjects,
-        edgeGlow,
-        edgeThickness
-    } );
-    // compose custom outline
-    const { visibleEdge, hiddenEdge } = outlinePass;
-    const outlineColor = visibleEdge.mul( visibleEdgeColor ).add( hiddenEdge.mul( hiddenEdgeColor ) ).mul( edgeStrength );
-    postProcessing.outputNode = outlineColor.add( scenePass );
-
-*/
+    /*
+        const postProcessing = new THREE.PostProcessing( renderer );
+        const scenePass = pass( scene, camera );
+        // outline parameter
+        const edgeStrength = uniform( 3.0 );
+        const edgeGlow = uniform( 0.0 );
+        const edgeThickness = uniform( 1.0 );
+        const visibleEdgeColor = uniform( new THREE.Color( 0xffffff ) );
+        const hiddenEdgeColor = uniform( new THREE.Color( 0x4e3636 ) );
+        outlinePass = outline( scene, camera, {
+            selectedObjects,
+            edgeGlow,
+            edgeThickness
+        } );
+        // compose custom outline
+        const { visibleEdge, hiddenEdge } = outlinePass;
+        const outlineColor = visibleEdge.mul( visibleEdgeColor ).add( hiddenEdge.mul( hiddenEdgeColor ) ).mul( edgeStrength );
+        postProcessing.outputNode = outlineColor.add( scenePass );
+    
+    */
 }
