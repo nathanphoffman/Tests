@@ -4,32 +4,75 @@ import viteLogo from '/vite.svg'
 
 //import { setupCounter } from './counter.ts'
 import { Terminal } from '@xterm/xterm';
+import { SerializeAddon } from "@xterm/addon-serialize";
 
-const ENTER = '\r';
 const PREFIX = ' $ ';
 const PREFIX_NEWLINE = `\n${PREFIX}`;
+const EMPTY = "";
+
+
+// Keys
+const ENTER = '\r';
+const BACKSPACE = '\x7f';
+const LEFTARROW = '\x1B[D';
 
 const terminalElement = document.getElementById('terminal');
 const terminal = new Terminal();
+const serializeAddon = new SerializeAddon();
+terminal.loadAddon(serializeAddon);
+
+
+let charactersOnCurrentLine = "";
+
+
+function removeLastCharacters(charactersToRemove: number) {
+  [...new Array(charactersToRemove)].map(()=>terminal.write('\b \b'));
+}
+
+function moveCursorLeft(spacesToMove: number) {
+  [...new Array(spacesToMove)].map(()=>terminal.write(LEFTARROW));
+}
+
+function clearCurrentLine() {
+  charactersOnCurrentLine = EMPTY;
+}
+
 if (terminalElement) {
   terminal.open(terminalElement);
-  terminal.write(' $ ')
+  terminal.write(PREFIX)
   terminal.onKey((input) => {
     
     if (input.key === ENTER) {
-      console.log("enter hit")
-      ///terminal.write(terminal);
-      terminal.write('\n');
 
-    } else if (input.key === '\x7f') { // Backspace  
+      // we must remove the characters from the buffer otherwise the cursor will shift right
+      moveCursorLeft(charactersOnCurrentLine.length + PREFIX.length);
+
+      if(charactersOnCurrentLine.length > 20) {
+        const line = "\nthis is an error woah!\n";
+        terminal.write(line);
+        moveCursorLeft(line.length);
+      }
+
+      console.log("enter hit", charactersOnCurrentLine)
+      clearCurrentLine();
+
+      ///terminal.write(terminal);
+      terminal.write(PREFIX_NEWLINE);
+      
+
+    } else if (input.key === BACKSPACE) {
       // Get current cursor position  
       const cursorX = terminal.buffer.active.cursorX;
       if (cursorX > PREFIX.length) { // Don't backspace past the prompt ($ )  
-        terminal.write('\b \b'); // Erase last character  
+
+         // erase last character, two \b are required as the first moves the cursor, the second the character
+         // the space is needed otherwise the cursor moves twice
+        removeLastCharacters(1);
       }
     }
     else {
       terminal.write(input.key);
+      charactersOnCurrentLine += input.key;
     }
   });
 
