@@ -24,6 +24,39 @@ const API = {
 
 init();
 
+
+/*
+
+Byte Array:
+
+Planet Name: a number: of 8 (000)  (3 bits)
+Color: 255/5 (51)(51)(51) 000000 000000 000000  (18 bits)
+Color also determines composition
+Rings: (0,1,2,4) diameter (00) distance is the same (00) so 0000 (4 bits) angle is 360/12 (5 bits) or 00 0000 00000 (11 bits total)
+
+-- 4 bytes so far (32 bits) then:
+
+Radius 1-4, 2 bits, bumpyness 1-4 2 bits  (4 bits of information)
+
+Moons have all the same data but name and rings (22 bits x 3 possible moons) = 66 bits.  
+
+Then moons also have xyz or -xyz positions or 3 bits and are offset with other free data (3x3 = 9 bits)
+
+75 bits for moons
+
+107 bits for planet and moons.  Additionally each body needs financial data on up to 3 elements:
+
+at 32 each (5 bits) that is 20 more bits for 127 bits of information.
+
+It should be possible to store everything on 128 bits (7 bytes) for planets, 56 bytes for 8 planets, plus solar information:
+
+
+
+
+
+*/
+
+
 function init() {
 
     // renderer
@@ -272,6 +305,9 @@ function init() {
             scene.add(mesh2);
 
         }
+
+
+
 
         const planetRadius = getRandomInteger(1, 4);
         const planet = renderSpheroid(planetRadius);
