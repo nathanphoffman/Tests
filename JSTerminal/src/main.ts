@@ -26,47 +26,70 @@ let charactersOnCurrentLine = "";
 
 
 function removeLastCharacters(charactersToRemove: number) {
-  [...new Array(charactersToRemove)].map(()=>terminal.write('\b \b'));
+  [...new Array(charactersToRemove)].map(() => terminal.write('\b \b'));
 }
 
 function moveCursorLeft(spacesToMove: number) {
-  [...new Array(spacesToMove)].map(()=>terminal.write(LEFTARROW));
+  [...new Array(spacesToMove)].map(() => terminal.write(LEFTARROW));
 }
 
 function clearCurrentLine() {
   charactersOnCurrentLine = EMPTY;
 }
 
+function performValidation(command: string) {
+
+  // built in commands
+  if (command === "clear") {
+    terminal.reset();
+    return { error: false, message: undefined };
+  }
+  else if (command.length > 20) {
+    return { error: true, message: "Command is too long" };
+  }
+  else return { error: false, message: '' };
+
+}
+
 if (terminalElement) {
   terminal.open(terminalElement);
   terminal.write(PREFIX)
+
   terminal.onKey((input) => {
-    
+
     if (input.key === ENTER) {
+
+      const output = performValidation(charactersOnCurrentLine);
+
+      // if it was cleared we need to not render an enter and just rerender the prefix
+      if(output.message === undefined) {
+        terminal.write(PREFIX);
+        return;
+      }
 
       // we must remove the characters from the buffer otherwise the cursor will shift right
       moveCursorLeft(charactersOnCurrentLine.length + PREFIX.length);
 
-      if(charactersOnCurrentLine.length > 20) {
-        const line = "\nthis is an error woah!\n";
+      if (output.error) {
+        const line = `\n   \x1B[38;2;255;165;0m${output.message}\x1B[0m\n`;
         terminal.write(line);
         moveCursorLeft(line.length);
       }
 
-      console.log("enter hit", charactersOnCurrentLine)
+      console.log("enter hit", charactersOnCurrentLine);
       clearCurrentLine();
 
       ///terminal.write(terminal);
       terminal.write(PREFIX_NEWLINE);
-      
+
 
     } else if (input.key === BACKSPACE) {
       // Get current cursor position  
       const cursorX = terminal.buffer.active.cursorX;
       if (cursorX > PREFIX.length) { // Don't backspace past the prompt ($ )  
 
-         // erase last character, two \b are required as the first moves the cursor, the second the character
-         // the space is needed otherwise the cursor moves twice
+        // erase last character, two \b are required as the first moves the cursor, the second the character
+        // the space is needed otherwise the cursor moves twice
         removeLastCharacters(1);
       }
     }
