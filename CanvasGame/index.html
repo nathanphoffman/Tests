@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Game</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+  <!--<script type="module" src="/src/main.ts"></script>-->
+</head>
+
+<body>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let x = 0; // Starting x position
+    let y = 50; // Starting y position
+    const targetX = 300; // Target x position
+    const targetY = 50; // Target y position
+    const MOVE_AMOUNT = 10;
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+      ctx.fillStyle = 'blue'; // Set color
+      ctx.fillRect(x, y, 10, 10); // Draw point
+
+      // Update position
+      if (x < targetX) x += 2; // Move towards target
+      requestAnimationFrame(animate); // Call next frame
+    }
+
+    //animate(); // Start animation
+
+
+    let player = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      size: 20,
+      color: 'blue'
+    };
+
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.size, player.size);
+    }
+
+  function getCanvasPosition() {
+      const rect = canvas.getBoundingClientRect()
+      const x = event.clientX - rect.left
+      const y = event.clientY - rect.top
+      return [x,y]
+    }
+
+
+    let currentMoveTo = [];
+
+    function moveToCurrent() {
+      const [x1, y1] = [player.x, player.y];
+      const [x2, y2] = currentMoveTo;
+
+      console.log([x1, y1],[x2, y2]);
+
+      const MOVE_ERROR = MOVE_AMOUNT/2;
+
+      if(x1-MOVE_ERROR > x2) player.x -= MOVE_AMOUNT;
+      if(x1+MOVE_ERROR < x2) player.x += MOVE_AMOUNT;
+
+      if(y1-MOVE_ERROR > y2) player.y -= MOVE_AMOUNT;
+      if(y1+MOVE_ERROR < y2) player.y += MOVE_AMOUNT;
+
+
+    }
+
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if(currentMoveTo.length > 0) moveToCurrent();
+      drawPlayer();
+      requestAnimationFrame(()=>setTimeout(gameLoop,33));
+    }
+
+
+
+    function resetMove() {
+      currentMoveTo = [];
+    }
+
+  
+
+    document.addEventListener('keydown', (e) => {
+      switch (e.key) {
+        case 'ArrowUp':
+          player.y -= MOVE_AMOUNT;
+          resetMove();
+          break;
+        case 'ArrowDown':
+          player.y += MOVE_AMOUNT;
+          resetMove();
+          break;
+        case 'ArrowLeft':
+          player.x -= MOVE_AMOUNT;
+          resetMove();
+          break;
+        case 'ArrowRight':
+          player.x += MOVE_AMOUNT;
+          resetMove();
+          break;
+      }
+    });
+
+    canvas.addEventListener('click', (e) => {
+      currentMoveTo = getCanvasPosition()
+      console.log("clicked at ", currentMoveTo)
+      console.log("x: " + x + " y: " + y)
+    });
+
+    gameLoop();
+  </script>
+</body>
+
+</html>
