@@ -6,12 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Game</title>
   <style>
-    canvas {
+    canvas.board {
       border: 1px solid black;
 
       position: absolute;
       top: 0;
       left: 0;
+    }
+
+    img {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
     }
   </style>
   <!--<script type="module" src="/src/main.ts"></script>-->
@@ -19,36 +24,18 @@
 
 <body>
   <div style="width: 1200; margin: auto">
-    <canvas style="z-index:10" id="gameCanvas" width="768" height="512"></canvas>
-    <canvas id="gameCanvas2" width="768" height="512"></canvas>
+    <canvas class="board" style="z-index:10" id="gameCanvas" width="768" height="512"></canvas>
+    <canvas class="board" id="gameCanvas2" width="768" height="512"></canvas>
   </div>
 
   <script>
 
 
 
-    function loadImage() {
-      var canvas33 = document.createElement("canvas");
-      var ctx3 = canvas33.getContext("2d");
-      canvas.width = canvas33.height = 16;
-
-      var sprites = new Image();
-      sprites.crossOrigin = "anonymous"
-      sprites.src = 'rogues.png';
-      //sprites.onload = getTiles
-
-      function getTile(x, y) {
-        ctx3.drawImage(sprites, x * 32 + 1, y * 32, 32, 32, 0, 0, 32, 32)
-        console.log(canvas33.toDataURL("image/png"));
-        return canvas33.toDataURL("image/png");
-      }
-
-      var knight1 = getTile(2, 1)
-      return knight1;
-    }
 
 
-  
+
+
 
 
     const SIZE = 32;
@@ -105,10 +92,45 @@
     }
 
 
-    setTimeout(()=>{
-      let img = loadImage();
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height); // Adjust the position and size as needed
-    },1000);
+
+    function loadSprite(fn) {
+
+      var canvas33 = document.createElement("canvas");
+      var ctx3 = canvas33.getContext("2d");
+      canvas33.width = canvas33.height = 32;
+
+      var sprites = new Image();
+      sprites.crossOrigin = "anonymous"
+      sprites.src = 'rogues.png';
+      //sprites.onload = getTiles
+
+      function getTile(x, y) {
+        ctx3.drawImage(sprites, 0, 0, 32, 32, 0, 0, 32, 32);
+        console.log(canvas33.toDataURL("image/png"));
+        return canvas33.toDataURL("image/png");
+      }
+
+      sprites.onload = function () {
+
+        var sprite = getTile(2, 1);
+        fn(sprite);
+
+      }
+    }
+
+
+    setTimeout(() => {
+
+      loadSprite((imgsrc) => {
+        const img = new Image();
+        img.src = imgsrc;
+
+        img.onload = function () {
+          ctx2.drawImage(img, 0, 0, 64, 64); // Adjust the position and size as needed
+        }
+
+      });
+    }, 1000);
 
 
     const loops_x = Math.floor(HEIGHT / SIZE);
@@ -139,7 +161,7 @@
       const [x1, y1] = [player.x, player.y];
       const [x2, y2] = currentMoveTo;
 
-      console.log([x1, y1], [x2, y2]);
+      //console.log([x1, y1], [x2, y2]);
 
       const MOVE_ERROR = MOVE_AMOUNT / 2;
 
