@@ -13,8 +13,10 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "@xterm/addon-serialize": "^0.14.0",
     "@xterm/xterm": "^6.0.0",
+    "tailwindcss": "^4.1.18",
     "xterminal": "^2.2.1"
   }
 }
