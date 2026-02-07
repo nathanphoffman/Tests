@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@xterm/addon-serialize": "^0.14.0",
-    "@xterm/xterm": "^6.0.0"
+    "@xterm/xterm": "^6.0.0",
+    "xterminal": "^2.2.1"
   }
 }
