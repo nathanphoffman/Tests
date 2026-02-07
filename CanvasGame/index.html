@@ -9,14 +9,20 @@
     canvas {
       border: 1px solid black;
       display: block;
-      margin: 0 auto;
+      margin: 0 auto;    
+      position: absolute;
+    top: 0;
+    left: 0;
     }
   </style>
   <!--<script type="module" src="/src/main.ts"></script>-->
 </head>
 
 <body>
-  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <div>
+    <canvas style="z-index:10" id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas2" width="800" height="600"></canvas>
+  </div>
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -25,7 +31,7 @@
     let y = 50; // Starting y position
     const targetX = 300; // Target x position
     const targetY = 50; // Target y position
-    const MOVE_AMOUNT = 10;
+    const MOVE_AMOUNT = 25;
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
@@ -43,20 +49,50 @@
     let player = {
       x: canvas.width / 2,
       y: canvas.height / 2,
-      size: 20,
+      size: 25,
       color: 'blue'
     };
+
+    const canvas2 = document.getElementById('gameCanvas2');
+    const ctx2 = canvas2.getContext('2d');
+
+    function drawLine(start, end) {
+      // Define a new path
+      ctx2.beginPath();
+
+      // Set a start-point
+      ctx2.moveTo(...start);
+
+      // Set an end-point
+      ctx2.lineTo(...end);
+
+      ctx2.lineWidth = 1;
+      ctx2.strokeStyle = "#aaa"
+
+      // Stroke it (Do the Drawing)
+      ctx2.stroke();
+    }
+
+    
+    const loops_x = Math.floor(600/25);
+    const loops_y = Math.floor(800/25);
+    
+    [...new Array(loops_x)].forEach((x,i)=>drawLine([0,(i+1)*25],[800, (i+1)*25]));
+    [...new Array(loops_y)].forEach((x,i)=>drawLine([(i+1)*25, 0],[(i+1)*25, 600]));
+
+
+    //drawLine();
 
     function drawPlayer() {
       ctx.fillStyle = player.color;
       ctx.fillRect(player.x, player.y, player.size, player.size);
     }
 
-  function getCanvasPosition() {
+    function getCanvasPosition() {
       const rect = canvas.getBoundingClientRect()
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
-      return [x,y]
+      const x = event.clientX - rect.left - player.size / 2.25
+      const y = event.clientY - rect.top - player.size / 2.25
+      return [x, y]
     }
 
 
@@ -66,15 +102,14 @@
       const [x1, y1] = [player.x, player.y];
       const [x2, y2] = currentMoveTo;
 
-      console.log([x1, y1],[x2, y2]);
+      console.log([x1, y1], [x2, y2]);
 
-      const MOVE_ERROR = MOVE_AMOUNT/2;
+      const MOVE_ERROR = MOVE_AMOUNT / 2;
 
-      if(x1-MOVE_ERROR > x2) player.x -= MOVE_AMOUNT;
-      if(x1+MOVE_ERROR < x2) player.x += MOVE_AMOUNT;
-
-      if(y1-MOVE_ERROR > y2) player.y -= MOVE_AMOUNT;
-      if(y1+MOVE_ERROR < y2) player.y += MOVE_AMOUNT;
+      if (x1 - MOVE_ERROR > x2) player.x -= MOVE_AMOUNT;
+      if (x1 + MOVE_ERROR < x2) player.x += MOVE_AMOUNT;
+      if (y1 - MOVE_ERROR > y2) player.y -= MOVE_AMOUNT;
+      if (y1 + MOVE_ERROR < y2) player.y += MOVE_AMOUNT;
 
 
     }
@@ -82,9 +117,9 @@
 
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if(currentMoveTo.length > 0) moveToCurrent();
+      if (currentMoveTo.length > 0) moveToCurrent();
       drawPlayer();
-      requestAnimationFrame(()=>setTimeout(gameLoop,33));
+      requestAnimationFrame(() => setTimeout(gameLoop, 100));
     }
 
 
@@ -93,7 +128,7 @@
       currentMoveTo = [];
     }
 
-  
+
 
     document.addEventListener('keydown', (e) => {
       switch (e.key) {
