@@ -3,16 +3,18 @@
 //import viteLogo from '/vite.svg'
 //import { setupCounter } from './counter.ts'
 
+import { generateBackgroundLayer } from "./background";
 import { generateGridCanvasLayer } from "./grid";
 import { generatePlayerCanvasLayer } from "./player";
+
 import type { Config } from "./types";
 
-(() => {
+(async () => {
 
   const CONFIG: Config = {
     SIZE: 32,
-    WIDTH: Math.floor(32 * 16),
-    HEIGHT: Math.floor(32 * 10),
+    WIDTH: Math.floor(32 * 32),
+    HEIGHT: Math.floor(32 * 24),
     SCALE: 1
   }
 
@@ -20,11 +22,13 @@ import type { Config } from "./types";
   const gridCanvas = generateGridCanvasLayer(CONFIG);
   if (!gridCanvas) throw "Grid canvas not generated";
 
-  const playerLoop = generatePlayerCanvasLayer(CONFIG, gridCanvas);
+  const playerLoop = await generatePlayerCanvasLayer(CONFIG, gridCanvas);
+
+  generateBackgroundLayer(CONFIG);
 
   const gameLoop = () => {
     if (playerLoop) playerLoop();
-    requestAnimationFrame(() => setTimeout(gameLoop, 100));
+    requestAnimationFrame(() => setTimeout(gameLoop, 250));
   }
 
   gameLoop();

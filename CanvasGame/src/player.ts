@@ -1,7 +1,8 @@
+import { loadSpriteImage } from "./sprite";
 import type { Config, Coord } from "./types";
 import { adjustCanvasSizeAndScale, clearCanvas, getPositionOfClick } from "./utility";
 
-export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvasElement) {
+export async function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvasElement) {
 
 
     const { SIZE } = CONFIG;
@@ -19,8 +20,7 @@ export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvas
         currentMoveTo = getPositionOfClick(canvas, e)
         currentMoveTo = undoMoveToOffset(currentMoveTo, CONFIG);
 
-        console.log("clicked at ", currentMoveTo)
-        console.log("x: " + x + " y: " + y)
+        console.log("clicked at ", currentMoveTo);
     });
 
     let player = {
@@ -32,22 +32,15 @@ export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvas
 
     let currentMoveTo: Coord = [player.x, player.y];
 
-
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let x = 0; // Starting x position
-    let y = 50; // Starting y position
-    //const targetX = 300; // Target x position
-    //const targetY = 50; // Target y position
-
-
+    const img = await loadSpriteImage("rogues.png",1,1);
 
     function animate() {
         if (!ctx) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas  
-        drawPlayer(player, ctx);
+        drawPlayer(player, ctx, img);
 
         // Update position
         //if (x < targetX) x += 2; // Move towards target
@@ -60,11 +53,11 @@ export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvas
     return () => {
         clearCanvas(ctx, CONFIG);
         if (currentMoveTo.length > 0) moveToCurrent(currentMoveTo, player, CONFIG);
-        drawPlayer(player, ctx);
+        drawPlayer(player, ctx, img);
     };
 }
 
-function undoMoveToOffset(currentMoveTo: Coord, CONFIG: Config) {
+function undoMoveToOffset(currentMoveTo: Coord, CONFIG: Config): Coord {
     const { SIZE } = CONFIG;
     const [x, y] = currentMoveTo;
 
@@ -72,13 +65,18 @@ function undoMoveToOffset(currentMoveTo: Coord, CONFIG: Config) {
     return [x - SIZE/2, y - SIZE/2]
 }
 
-function drawPlayer(player, ctx: CanvasRenderingContext2D) {
+function drawPlayer(player, ctx: CanvasRenderingContext2D, img: any) {
 
     const { x, y, size, color } = player;
     ctx.fillStyle = color;
 
     // player is a square so both sizes for x and y scale are equal
-    ctx.fillRect(x, y, size, size);
+
+    ctx.beginPath();
+    ctx.rect(x, y, size, size);
+    ctx.stroke();
+
+    ctx.drawImage(img as any, x, y, size, size);
 }
 
 function moveToCurrent(currentMoveTo: Coord, player, CONFIG: Config) {

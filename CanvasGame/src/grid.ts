@@ -30,7 +30,7 @@ export function generateGridCanvasLayer(CONFIG: Config) {
         ctx.lineTo(...end);
 
         ctx.lineWidth = 1;
-        ctx.strokeStyle = "#aaa"
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.25)"
 
         // Stroke it (Do the Drawing)
         ctx.stroke();
