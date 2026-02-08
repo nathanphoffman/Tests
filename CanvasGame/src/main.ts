@@ -1,24 +1,45 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+//import './style.css'
+//import typescriptLogo from './typescript.svg'
+//import viteLogo from '/vite.svg'
+//import { setupCounter } from './counter.ts'
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+import { generateGridCanvasLayer } from "./grid";
+import { generatePlayerCanvasLayer } from "./player";
+import type { Config } from "./types";
+import { clearCanvas } from "./utility";
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+(() => {
+
+  const CONFIG: Config = {
+    SIZE: 32,
+    WIDTH: Math.floor(32 * 60),
+    HEIGHT: Math.floor(32 * 40),
+    SCALE: 2
+  }
+
+  const playerCtx = generatePlayerCanvasLayer(CONFIG);
+  generateGridCanvasLayer(CONFIG);
+
+  if (!playerCtx) throw "Problem loading player canvas";
+
+  let currentMoveTo: [Number, Number][] = [];
+
+  const gameLoop = () => {
+    runPlayerLoop(CONFIG);
+    requestAnimationFrame(() => setTimeout(gameLoop, 100));
+  }
+
+  function resetMove() {
+    currentMoveTo = [];
+  }
+
+  canvas.addEventListener('click', (e) => {
+    currentMoveTo = getCanvasPosition()
+    console.log("clicked at ", currentMoveTo)
+    console.log("x: " + x + " y: " + y)
+  });
+
+  gameLoop();
+
+
+})()
