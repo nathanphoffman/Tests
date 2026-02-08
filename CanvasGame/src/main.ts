@@ -12,22 +12,23 @@ import type { Config } from "./types";
 (async () => {
 
   const CONFIG: Config = {
-    SIZE: 32,
-    WIDTH: Math.floor(32 * 32),
-    HEIGHT: Math.floor(32 * 24),
+    SIZE: 64,
+    WIDTH: Math.floor(64 * 16),
+    HEIGHT: Math.floor(64 * 12),
     SCALE: 1
   }
 
   // the grid canvas lays on top so we attach even listeners to it
   const gridCanvas = generateGridCanvasLayer(CONFIG);
   if (!gridCanvas) throw "Grid canvas not generated";
-
   const playerLoop = await generatePlayerCanvasLayer(CONFIG, gridCanvas);
+  await generateBackgroundLayer(CONFIG);
 
-  generateBackgroundLayer(CONFIG);
-
+  // once all assets are loaded we start the game
   const gameLoop = () => {
     if (playerLoop) playerLoop();
+
+    // start the game at approximately 4fps
     requestAnimationFrame(() => setTimeout(gameLoop, 250));
   }
 

@@ -1,7 +1,10 @@
+import type { Config } from "./types";
 
 
-export async function loadSpriteImage(spriteSheetPath: string, x: number, y: number) {
-  
+export async function loadSpriteImage(spriteSheetPath: string, x: number, y: number, CONFIG: Config) {
+
+  const { SIZE } = CONFIG;
+
   // load in sprites
   let sprites = new Image();
   sprites.crossOrigin = "anonymous"
@@ -9,7 +12,7 @@ export async function loadSpriteImage(spriteSheetPath: string, x: number, y: num
 
   //sprites.src = spriteSheetPath;
   //await sprites.onload;
-  
+
   // Load the image using a promise
   const loadImage = () => {
     return new Promise((resolve, reject) => {
@@ -18,19 +21,19 @@ export async function loadSpriteImage(spriteSheetPath: string, x: number, y: num
       sprites.src = spriteSheetPath;
     });
   };
-  
+
   // Wait for the image to load
   await loadImage();
-  
+
 
 
   // write sprites to canvas
   let temporaryCanvas = document.createElement("canvas");
-  temporaryCanvas.width = temporaryCanvas.height = 32;
+  temporaryCanvas.width = temporaryCanvas.height = SIZE;
   let ctx = temporaryCanvas.getContext("2d");
-  if(!ctx) return;
-  
-  ctx.drawImage(sprites, x * 32, y * 32, 32, 32, 0, 0, 32, 32);
+  if (!ctx) return;
+
+  ctx.drawImage(sprites, x * SIZE, y * SIZE, SIZE, SIZE, 0, 0, SIZE, SIZE);
   const spriteSheetData = temporaryCanvas.toDataURL("image/png");
 
   const img = new Image();

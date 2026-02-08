@@ -35,7 +35,7 @@ export async function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTML
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const img = await loadSpriteImage("rogues.png",1,1);
+    const img = await loadSpriteImage("rogues-64.png",2,2, CONFIG);
 
     function animate() {
         if (!ctx) return;

@@ -3,7 +3,7 @@ export type MultipleOf32 = number;
 export type Multiplier = number;
 
 export type Config = {
-    SIZE: 32,
+    SIZE: 64,
     WIDTH: MultipleOf32,
     HEIGHT: MultipleOf32,
     SCALE: Multiplier
