@@ -11,7 +11,7 @@ import type { Config } from "./types";
 
   const CONFIG: Config = {
     SIZE: 32,
-    WIDTH: Math.floor(32 * 15),
+    WIDTH: Math.floor(32 * 16),
     HEIGHT: Math.floor(32 * 10),
     SCALE: 1
   }

@@ -7,16 +7,18 @@ export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvas
     const { SIZE } = CONFIG;
 
     const canvas = document.getElementById('player') as HTMLCanvasElement;
-    
+
     if (!canvas) {
         console.error("Canvas does not exist");
         return;
     }
 
     adjustCanvasSizeAndScale(canvas, CONFIG);
-    
+
     gridCanvas.addEventListener('click', (e) => {
         currentMoveTo = getPositionOfClick(canvas, e)
+        currentMoveTo = undoMoveToOffset(currentMoveTo, CONFIG);
+
         console.log("clicked at ", currentMoveTo)
         console.log("x: " + x + " y: " + y)
     });
@@ -28,7 +30,7 @@ export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvas
         color: 'blue'
     };
 
-    let currentMoveTo: Coord = [player.x,player.y];
+    let currentMoveTo: Coord = [player.x, player.y];
 
 
 
@@ -41,7 +43,7 @@ export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvas
     //const targetY = 50; // Target y position
 
 
-    
+
     function animate() {
         if (!ctx) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas  
@@ -53,7 +55,7 @@ export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvas
     }
 
     animate();
- 
+
     // loop for the game engine
     return () => {
         clearCanvas(ctx, CONFIG);
@@ -62,16 +64,24 @@ export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvas
     };
 }
 
+function undoMoveToOffset(currentMoveTo: Coord, CONFIG: Config) {
+    const { SIZE } = CONFIG;
+    const [x, y] = currentMoveTo;
+
+    // the moveTo command must be offset by the upper right portion of the rectangle
+    return [x - SIZE/2, y - SIZE/2]
+}
+
 function drawPlayer(player, ctx: CanvasRenderingContext2D) {
 
-    const {x,y,size,color} = player;
+    const { x, y, size, color } = player;
     ctx.fillStyle = color;
 
     // player is a square so both sizes for x and y scale are equal
     ctx.fillRect(x, y, size, size);
 }
 
-function moveToCurrent(currentMoveTo, player, CONFIG) {
+function moveToCurrent(currentMoveTo: Coord, player, CONFIG: Config) {
 
     const MOVE_AMOUNT = CONFIG.SIZE;
 
@@ -88,8 +98,3 @@ function moveToCurrent(currentMoveTo, player, CONFIG) {
     if (y1 + MOVE_ERROR < y2) player.y += MOVE_AMOUNT;
 }
 
-/*
-function resetMove(currentMoveTo: Coord) {
-    currentMoveTo = [];
-}
-    */
