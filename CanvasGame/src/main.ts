@@ -6,40 +6,27 @@
 import { generateGridCanvasLayer } from "./grid";
 import { generatePlayerCanvasLayer } from "./player";
 import type { Config } from "./types";
-import { clearCanvas } from "./utility";
 
 (() => {
 
   const CONFIG: Config = {
     SIZE: 32,
-    WIDTH: Math.floor(32 * 60),
-    HEIGHT: Math.floor(32 * 40),
-    SCALE: 2
+    WIDTH: Math.floor(32 * 15),
+    HEIGHT: Math.floor(32 * 10),
+    SCALE: 1
   }
 
-  const playerCtx = generatePlayerCanvasLayer(CONFIG);
-  generateGridCanvasLayer(CONFIG);
+  // the grid canvas lays on top so we attach even listeners to it
+  const gridCanvas = generateGridCanvasLayer(CONFIG);
+  if (!gridCanvas) throw "Grid canvas not generated";
 
-  if (!playerCtx) throw "Problem loading player canvas";
-
-  let currentMoveTo: [Number, Number][] = [];
+  const playerLoop = generatePlayerCanvasLayer(CONFIG, gridCanvas);
 
   const gameLoop = () => {
-    runPlayerLoop(CONFIG);
+    if (playerLoop) playerLoop();
     requestAnimationFrame(() => setTimeout(gameLoop, 100));
   }
 
-  function resetMove() {
-    currentMoveTo = [];
-  }
-
-  canvas.addEventListener('click', (e) => {
-    currentMoveTo = getCanvasPosition()
-    console.log("clicked at ", currentMoveTo)
-    console.log("x: " + x + " y: " + y)
-  });
-
   gameLoop();
-
 
 })()

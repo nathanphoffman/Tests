@@ -1,42 +1,25 @@
-import type { Config } from "./types";
-import { adjustCanvasSizeAndScale, clearCanvas } from "./utility";
+import type { Config, Coord } from "./types";
+import { adjustCanvasSizeAndScale, clearCanvas, getPositionOfClick } from "./utility";
+
+export function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvasElement) {
 
 
-export function runPlayerLoop() {
-    clearCanvas(playerCtx, CONFIG);
-    if (currentMoveTo.length > 0) moveToCurrent();
-    drawPlayer();
-}
+    const { SIZE } = CONFIG;
 
-export function generatePlayerCanvasLayer(CONFIG: Config) {
-    const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+    const canvas = document.getElementById('player') as HTMLCanvasElement;
+    
     if (!canvas) {
         console.error("Canvas does not exist");
         return;
     }
 
     adjustCanvasSizeAndScale(canvas, CONFIG);
-
-    const ctx = canvas.getContext('2d');
-
-    let x = 0; // Starting x position
-    let y = 50; // Starting y position
-    //const targetX = 300; // Target x position
-    //const targetY = 50; // Target y position
-    const MOVE_AMOUNT = SIZE;
-
-    function animate() {
-        if (!ctx) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
-        ctx.fillStyle = 'blue'; // Set color
-        ctx.fillRect(x, y, 10, 10); // Draw point
-
-        // Update position
-        //if (x < targetX) x += 2; // Move towards target
-        requestAnimationFrame(animate); // Call next frame
-    }
-
-    //animate(); // Start animation
+    
+    gridCanvas.addEventListener('click', (e) => {
+        currentMoveTo = getPositionOfClick(canvas, e)
+        console.log("clicked at ", currentMoveTo)
+        console.log("x: " + x + " y: " + y)
+    });
 
     let player = {
         x: canvas.width / 2,
@@ -45,26 +28,53 @@ export function generatePlayerCanvasLayer(CONFIG: Config) {
         color: 'blue'
     };
 
-    return ctx;
+    let currentMoveTo: Coord = [player.x,player.y];
 
+
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let x = 0; // Starting x position
+    let y = 50; // Starting y position
+    //const targetX = 300; // Target x position
+    //const targetY = 50; // Target y position
+
+
+    
+    function animate() {
+        if (!ctx) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas  
+        drawPlayer(player, ctx);
+
+        // Update position
+        //if (x < targetX) x += 2; // Move towards target
+        requestAnimationFrame(animate); // Call next frame
+    }
+
+    animate();
+ 
+    // loop for the game engine
+    return () => {
+        clearCanvas(ctx, CONFIG);
+        if (currentMoveTo.length > 0) moveToCurrent(currentMoveTo, player, CONFIG);
+        drawPlayer(player, ctx);
+    };
 }
 
+function drawPlayer(player, ctx: CanvasRenderingContext2D) {
 
+    const {x,y,size,color} = player;
+    ctx.fillStyle = color;
 
-
-function drawPlayer() {
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.size, player.size);
+    // player is a square so both sizes for x and y scale are equal
+    ctx.fillRect(x, y, size, size);
 }
 
-function getCanvasPosition() {
-    const rect = canvas.getBoundingClientRect()
-    const x = event.clientX - rect.left - player.size / 2.25
-    const y = event.clientY - rect.top - player.size / 2.25
-    return [x, y]
-}
+function moveToCurrent(currentMoveTo, player, CONFIG) {
 
-function moveToCurrent() {
+    const MOVE_AMOUNT = CONFIG.SIZE;
+
     const [x1, y1] = [player.x, player.y];
     const [x2, y2] = currentMoveTo;
 
@@ -76,6 +86,10 @@ function moveToCurrent() {
     if (x1 + MOVE_ERROR < x2) player.x += MOVE_AMOUNT;
     if (y1 - MOVE_ERROR > y2) player.y -= MOVE_AMOUNT;
     if (y1 + MOVE_ERROR < y2) player.y += MOVE_AMOUNT;
-
-
 }
+
+/*
+function resetMove(currentMoveTo: Coord) {
+    currentMoveTo = [];
+}
+    */
