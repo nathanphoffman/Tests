@@ -15,7 +15,7 @@ export async function generadeDoodadsLayer(CONFIG: Config) {
 
     let collisionMap: Coord[] = [];
     const doodads = await getDoodadLibrary(ctx, CONFIG, collisionMap);
-    const { treeTop, treeBottom, tree1, tree2 } = doodads;
+    const { treeTop, treeBottom, tree1, tree2, grass1, grass2, grass3 } = doodads;
 
     
 
@@ -24,6 +24,10 @@ export async function generadeDoodadsLayer(CONFIG: Config) {
 
     tree1(3,3);
     tree2(3,5);
+
+    grass1(5,5);
+    grass2(6,5);
+    grass3(7,5);
 
     return collisionMap;
 
@@ -38,6 +42,9 @@ async function getDoodadLibrary(ctx: CanvasRenderingContext2D, CONFIG: Config, c
         treeBottom: tiles(3,25),
         tree1: tiles(1,25),
         tree2: tiles(2,25),
+        grass1: tiles(1,19),
+        grass2: tiles(2,19),
+        grass3: tiles(3,19),
     }
 }
 
