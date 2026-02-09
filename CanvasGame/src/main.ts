@@ -7,6 +7,7 @@ import { generateBackgroundLayer } from "./background";
 import { generadeDoodadsLayer } from "./doodads";
 import { generateGridCanvasLayer } from "./grid";
 import { generatePlayerCanvasLayer } from "./player";
+import { playMusic } from "./sound";
 
 import type { Config } from "./types";
 
@@ -26,6 +27,8 @@ import type { Config } from "./types";
 
   await generateBackgroundLayer(CONFIG);
   const collisionMap = await generadeDoodadsLayer(CONFIG);
+
+  //playMusic();
 
   // once all assets are loaded we start the game
   const gameLoop = () => {

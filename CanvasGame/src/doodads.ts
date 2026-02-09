@@ -17,8 +17,6 @@ export async function generadeDoodadsLayer(CONFIG: Config) {
     const doodads = await getDoodadLibrary(ctx, CONFIG, collisionMap);
     const { treeTop, treeBottom, tree1, tree2, grass1, grass2, grass3 } = doodads;
 
-    
-
     treeTop(2,2);
     treeBottom(2,3);
 

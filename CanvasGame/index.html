@@ -6,28 +6,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Game</title>
   <style>
+
+    body {
+      background-color: #333;
+    }
+
     canvas.board {
       border: 1px solid black;
       position: absolute;
       top: 0;
       left: 0;
-      zoom: 1;
+      display: block;
     }
 
     img {
       image-rendering: -webkit-optimize-contrast;
       image-rendering: crisp-edges;
     }
+
+    .button {
+  position: relative;
+  
+  &:before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+    box-shadow: inset 0 0 15px 10px #000;
+  }
+      position: absolute;
+    }
+
+
   </style>
   <!--<script type="module" src="/src/main.ts"></script>-->
 </head>
 
 <body>
+  <audio id="audio" src="music/battle.mp3"></audio>
   <div style="margin: auto">
     <canvas class="board" style="z-index:10" id="grid"></canvas>
     <canvas class="board" style="z-index:5" id="player"></canvas>
     <canvas class="board" style="z-index:3" id="doodads"></canvas>
     <canvas class="board" id="background"></canvas>
+  </div>
+
+  <div class="button">
+    <img src="stone-test2.png">
   </div>
 
   <script type="module" src="/src/main.ts"></script>

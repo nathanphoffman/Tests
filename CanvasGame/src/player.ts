@@ -1,3 +1,4 @@
+import { playMusic } from "./sound";
 import { loadSpriteImage } from "./sprite";
 import type { Config, Coord } from "./types";
 import { adjustCanvasSizeAndScale, clearCanvas, futureCollisionOnAxis, getPositionOfClick } from "./utility";
@@ -17,6 +18,9 @@ export async function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTML
     adjustCanvasSizeAndScale(canvas, CONFIG);
 
     gridCanvas.addEventListener('click', (e) => {
+
+        playMusic();
+
         currentMoveTo = getPositionOfClick(canvas, e)
         currentMoveTo = undoMoveToOffset(currentMoveTo, CONFIG);
 
@@ -110,7 +114,7 @@ function moveToCurrent(collisionMap: Coord[], currentMoveTo: Coord, player: any,
 
         const newPosition = player[axis] + amount;
 
-        console.log(collisionMap);
+        //console.log(collisionMap);
 
         const collisionDetected = collisionMap.find(coord => {
 
