@@ -29,6 +29,8 @@ export async function generadeDoodadsLayer(CONFIG: Config) {
     grass2(6,5);
     grass3(7,5);
 
+    console.log(collisionMap);
+
     return collisionMap;
 
 }
@@ -38,10 +40,10 @@ async function getDoodadLibrary(ctx: CanvasRenderingContext2D, CONFIG: Config, c
     const tiles = await spriteSheetFn(ctx,"tiles-64.png",CONFIG, collisionMap);
 
     return {
-        treeTop: tiles(3,24, false),
-        treeBottom: tiles(3,25),
-        tree1: tiles(1,25),
-        tree2: tiles(2,25),
+        treeTop: tiles(3,24),
+        treeBottom: tiles(3,25, true),
+        tree1: tiles(1,25, true),
+        tree2: tiles(2,25, true),
         grass1: tiles(1,19),
         grass2: tiles(2,19),
         grass3: tiles(3,19),
@@ -54,8 +56,8 @@ async function spriteSheetFn(ctx: CanvasRenderingContext2D, sheet: string, CONFI
 
     const spriteSheet = await loadSpriteSheet(sheet);
 
-    return (sheetX, sheetY, collision: boolean = true)=> async (x,y) =>{
-        collisionMap.push([x,y])
+    return (sheetX, sheetY, collision: boolean = false)=> async (x,y) =>{
+        if(collision) collisionMap.push([x,y])
         const img = await loadSpriteFromSheet(spriteSheet, sheetX, sheetY, CONFIG);
         ctx.drawImage(img as any, SIZE * x, SIZE * y, SIZE, SIZE);
     }

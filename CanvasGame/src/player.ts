@@ -1,6 +1,6 @@
 import { loadSpriteImage } from "./sprite";
 import type { Config, Coord } from "./types";
-import { adjustCanvasSizeAndScale, clearCanvas, getPositionOfClick } from "./utility";
+import { adjustCanvasSizeAndScale, clearCanvas, futureCollisionOnAxis, getPositionOfClick } from "./utility";
 
 export async function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTMLCanvasElement) {
 
@@ -20,7 +20,7 @@ export async function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTML
         currentMoveTo = getPositionOfClick(canvas, e)
         currentMoveTo = undoMoveToOffset(currentMoveTo, CONFIG);
 
-        console.log("clicked at ", currentMoveTo);
+        //console.log("clicked at ", currentMoveTo);
     });
 
     let player = {
@@ -41,7 +41,7 @@ export async function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTML
         if (!ctx) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas  
         drawPlayer(player, ctx, img);
-if(currentMoveTo && currentMoveTo.length) drawMoveTo(currentMoveTo, ctx, CONFIG);
+        if (currentMoveTo && currentMoveTo.length) drawMoveTo(currentMoveTo, ctx, CONFIG);
         // Update position
         //if (x < targetX) x += 2; // Move towards target
         requestAnimationFrame(animate); // Call next frame
@@ -53,7 +53,7 @@ if(currentMoveTo && currentMoveTo.length) drawMoveTo(currentMoveTo, ctx, CONFIG)
     return (collisionMap: Coord[]) => {
         clearCanvas(ctx, CONFIG);
         if (currentMoveTo.length > 0) moveToCurrent(collisionMap, currentMoveTo, player, CONFIG);
-        if(currentMoveTo && currentMoveTo.length) drawMoveTo(currentMoveTo, ctx, CONFIG);
+        if (currentMoveTo && currentMoveTo.length) drawMoveTo(currentMoveTo, ctx, CONFIG);
         //drawPlayer(player, ctx, img);
     };
 }
@@ -82,41 +82,55 @@ function drawPlayer(player, ctx: CanvasRenderingContext2D, img: any) {
 
 function drawMoveTo(currentMoveTo: Coord, ctx: CanvasRenderingContext2D, CONFIG: Config) {
 
-    console.log("currentmoveto is", currentMoveTo);
+    //console.log("currentmoveto is", currentMoveTo);
 
     const { SIZE } = CONFIG;
     //ctx.fillStyle = "blue";
     ctx.beginPath();
 
     // we have to center on the square by taking 0.5 the size of a 64 space
-    ctx.rect(Math.ceil(currentMoveTo[0]/SIZE-0.5)*SIZE, Math.ceil(currentMoveTo[1]/SIZE-0.5)*SIZE, SIZE, SIZE);
+    ctx.rect(Math.ceil(currentMoveTo[0] / SIZE - 0.5) * SIZE, Math.ceil(currentMoveTo[1] / SIZE - 0.5) * SIZE, SIZE, SIZE);
     ctx.stroke();
 }
 
-let flipFlop = false; 
+let flipFlop = false;
 
-function moveToCurrent(collisionMap: Coord[], currentMoveTo: Coord, player, CONFIG: Config) {
+function moveToCurrent(collisionMap: Coord[], currentMoveTo: Coord, player: any, CONFIG: Config) {
 
     const MOVE_AMOUNT = CONFIG.SIZE;
 
     const [x1, y1] = [player.x, player.y];
     const [x2, y2] = currentMoveTo;
 
-    //console.log([x1, y1], [x2, y2]);
-
     const MOVE_ERROR = MOVE_AMOUNT / 2;
 
     type direction = { west: any, east: any, south: any, north: any }
 
-    const move = (direction: string, amount: number)=> {
+    const move = (axis: "x" | "y", amount: number) => {
 
-        //if(collisionMap.includes([player]))
+        const newPosition = player[axis] + amount;
 
-        return ()=>player[direction] += amount;
+        console.log(collisionMap);
+
+        const collisionDetected = collisionMap.find(coord => {
+
+            // opposite of the moving axis:
+            const staticAxis = axis === "x" ? "y" : "x";
+
+            const collisionOnMovingAxis = futureCollisionOnAxis(amount, player, coord, axis, CONFIG);
+            const collisionOnStaticAxis = futureCollisionOnAxis(0, player, coord, staticAxis, CONFIG);
+
+            return collisionOnStaticAxis && collisionOnMovingAxis;
+        });
+
+        if (collisionDetected) return () => { };
+
+        //console.log(currentMoveTo, player)
+        return () => player[axis] += amount;
     }
 
     const moveTo: direction = {
-        west: move("x",-MOVE_AMOUNT),
+        west: move("x", -MOVE_AMOUNT),
         east: move("x", +MOVE_AMOUNT),
         south: move("y", -MOVE_AMOUNT),
         north: move("y", MOVE_AMOUNT)
@@ -145,16 +159,15 @@ function moveToCurrent(collisionMap: Coord[], currentMoveTo: Coord, player, CONF
         }
     }
     else {
-    // only 1 move is relevant in this scenario the find exits early on truthy,
-    // we just need to find which direction is truthy which is the purpose of the find loop
-    Object.keys(heading).find(direction => {
-        if (heading[direction]) {
-            moveTo[direction]();
-            return true;
-        }
-        else return false;
-    });
-}
+        // only 1 move is relevant in this scenario the find exits early on truthy,
+        // we just need to find which direction is truthy which is the purpose of the find loop
+        Object.keys(heading).find(direction => {
+            if (heading[direction]) {
+                moveTo[direction]();
+                return true;
+            }
+            else return false;
+        });
+    }
 
 }
-

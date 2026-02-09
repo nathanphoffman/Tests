@@ -23,6 +23,26 @@ export function getPositionOfClick(canvas: HTMLCanvasElement, e: PointerEvent): 
     return [x, y];
 }
 
+export function futureCollisionOnAxis(moveAmount: number, player: any, coord: Coord, axis: "x" | "y", CONFIG: Config) {
+
+    const coordKey = {
+        x: 0,
+        y: 1
+    }
+
+    const key = coordKey[axis];
+
+    const gridPositionOfCollision = coord[key] * 64;
+    const gridFuturePositionOfPlayer = player[axis] + moveAmount;
+    const halfGridSquare = CONFIG.SIZE / 2;
+
+    const collisionOnAxisDistance = Math.abs(gridPositionOfCollision - gridFuturePositionOfPlayer);
+    const collisionOnAxis = collisionOnAxisDistance <= halfGridSquare;
+
+    return collisionOnAxis;
+}
+
+
 /*
 export function memoize(obj: any, ) {
     Object.keys.find((key)=>{
