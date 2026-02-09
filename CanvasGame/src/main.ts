@@ -4,6 +4,7 @@
 //import { setupCounter } from './counter.ts'
 
 import { generateBackgroundLayer } from "./background";
+import { generadeDoodadsLayer } from "./doodads";
 import { generateGridCanvasLayer } from "./grid";
 import { generatePlayerCanvasLayer } from "./player";
 
@@ -23,6 +24,7 @@ import type { Config } from "./types";
   if (!gridCanvas) throw "Grid canvas not generated";
   const playerLoop = await generatePlayerCanvasLayer(CONFIG, gridCanvas);
   await generateBackgroundLayer(CONFIG);
+  await generadeDoodadsLayer(CONFIG);
 
   // once all assets are loaded we start the game
   const gameLoop = () => {
