@@ -22,3 +22,10 @@ export function getPositionOfClick(canvas: HTMLCanvasElement, e: PointerEvent): 
     const y = e.clientY - rect.top;
     return [x, y];
 }
+/*
+export function memoize(obj: any, ) {
+    Object.keys.find((key)=>{
+
+    })
+}
+    */

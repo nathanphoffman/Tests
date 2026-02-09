@@ -50,9 +50,9 @@ export async function generatePlayerCanvasLayer(CONFIG: Config, gridCanvas: HTML
     animate();
 
     // loop for the game engine
-    return () => {
+    return (collisionMap: Coord[]) => {
         clearCanvas(ctx, CONFIG);
-        if (currentMoveTo.length > 0) moveToCurrent(currentMoveTo, player, CONFIG);
+        if (currentMoveTo.length > 0) moveToCurrent(collisionMap,currentMoveTo, player, CONFIG);
         drawPlayer(player, ctx, img);
     };
 }
@@ -79,7 +79,7 @@ function drawPlayer(player, ctx: CanvasRenderingContext2D, img: any) {
     ctx.drawImage(img as any, x, y, size, size);
 }
 
-function moveToCurrent(currentMoveTo: Coord, player, CONFIG: Config) {
+function moveToCurrent(collisionMap: Coord[], currentMoveTo: Coord, player, CONFIG: Config) {
 
     const MOVE_AMOUNT = CONFIG.SIZE;
 
@@ -90,9 +90,44 @@ function moveToCurrent(currentMoveTo: Coord, player, CONFIG: Config) {
 
     const MOVE_ERROR = MOVE_AMOUNT / 2;
 
-    if (x1 - MOVE_ERROR > x2) player.x -= MOVE_AMOUNT;
-    if (x1 + MOVE_ERROR < x2) player.x += MOVE_AMOUNT;
-    if (y1 - MOVE_ERROR > y2) player.y -= MOVE_AMOUNT;
-    if (y1 + MOVE_ERROR < y2) player.y += MOVE_AMOUNT;
+    type direction = {west: any, east: any, south: any, north: any}
+
+    const moveTo : direction = {
+        west: ()=>player.x -= MOVE_AMOUNT,
+        east: ()=>player.x += MOVE_AMOUNT,
+        south: ()=>player.y -= MOVE_AMOUNT,
+        north: ()=>player.y += MOVE_AMOUNT
+    }
+
+    const heading : direction = {
+        west: x1 - MOVE_ERROR > x2,
+        east: x1 + MOVE_ERROR < x2,
+        south: y1 - MOVE_ERROR > y2,
+        north: y1 + MOVE_ERROR < y2
+    }
+
+    const headingVertical = heading.south || heading.north;
+    const headingHorizontal = heading.east || heading.west;
+
+
+    if(headingHorizontal && headingVertical) {
+        const moveHorizontal = Math.random() < 0.5;
+
+        if(moveHorizontal) {
+            
+        }
+    }
+    else {
+        // only 1 move is relevant in this scenario the find exits early on truthy,
+        // we just need to find which direction is truthy which is the purpose of the find loop
+        Object.keys(heading).find(direction=>{
+            if(heading[direction]) {
+                moveTo[direction]();
+                return true;
+            }
+            else return false;
+        });
+    }
+
 }
 

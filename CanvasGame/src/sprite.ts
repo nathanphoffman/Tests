@@ -6,7 +6,7 @@ export async function loadSpriteImage(spriteSheetPath: string, x: number, y: num
 
 
   const spriteSheet = await loadSpriteSheet(spriteSheetPath);
-  const sprite = loadSpriteFromSheet(spriteSheet, x, y, CONFIG);
+  const sprite = await loadSpriteFromSheet(spriteSheet, x, y, CONFIG);
   return sprite;
 
   // write sprites to canvas
@@ -15,6 +15,9 @@ export async function loadSpriteImage(spriteSheetPath: string, x: number, y: num
 }
 
 export async function loadSpriteFromSheet(spriteSheet: HTMLImageElement, x: number, y: number, CONFIG: Config) {
+
+  //const memoEntry = memoize(spriteSheet, x, y);
+  //if(!!memoEntry) return memoEntry;
 
   const { SIZE } = CONFIG;
 
@@ -29,6 +32,8 @@ export async function loadSpriteFromSheet(spriteSheet: HTMLImageElement, x: numb
   const img = new Image();
   img.src = spriteSheetData;
   await new Promise((resolve) => img.onload = resolve);
+
+  //memoize({spriteSheet, x, y} ,img);
   return img;
 }
 

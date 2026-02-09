@@ -23,12 +23,13 @@ import type { Config } from "./types";
   const gridCanvas = generateGridCanvasLayer(CONFIG);
   if (!gridCanvas) throw "Grid canvas not generated";
   const playerLoop = await generatePlayerCanvasLayer(CONFIG, gridCanvas);
+
   await generateBackgroundLayer(CONFIG);
-  await generadeDoodadsLayer(CONFIG);
+  const collisionMap = await generadeDoodadsLayer(CONFIG);
 
   // once all assets are loaded we start the game
   const gameLoop = () => {
-    if (playerLoop) playerLoop();
+    if (playerLoop) playerLoop(collisionMap);
 
     // start the game at approximately 4fps
     requestAnimationFrame(() => setTimeout(gameLoop, 250));

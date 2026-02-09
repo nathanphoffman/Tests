@@ -1,4 +1,5 @@
-import { loadSpriteImage } from "./sprite";
+import { loadSpriteFromSheet, loadSpriteImage, loadSpriteSheet } from "./sprite";
+import type { Config, Coord } from "./types";
 import { adjustCanvasSizeAndScale } from "./utility";
 
 export async function generadeDoodadsLayer(CONFIG: Config) {
@@ -12,8 +13,8 @@ export async function generadeDoodadsLayer(CONFIG: Config) {
     if(!ctx) return;
 
 
-    let collisionMap = [];
-    const doodads = getDoodadLibrary(ctx, CONFIG, collisionMap);
+    let collisionMap: Coord[] = [];
+    const doodads = await getDoodadLibrary(ctx, CONFIG, collisionMap);
     const { treeTop, treeBottom, tree1, tree2 } = doodads;
 
     
@@ -24,11 +25,13 @@ export async function generadeDoodadsLayer(CONFIG: Config) {
     tree1(3,3);
     tree2(3,5);
 
+    return collisionMap;
+
 }
 
-function getDoodadLibrary(ctx: CanvasRenderingContext2D, CONFIG: Config, collisionMap: any) {
+async function getDoodadLibrary(ctx: CanvasRenderingContext2D, CONFIG: Config, collisionMap: any) {
 
-    const tiles = spriteSheetFn(ctx,"tiles-64.png",CONFIG, collisionMap);
+    const tiles = await spriteSheetFn(ctx,"tiles-64.png",CONFIG, collisionMap);
 
     return {
         treeTop: tiles(3,24, false),
@@ -38,13 +41,15 @@ function getDoodadLibrary(ctx: CanvasRenderingContext2D, CONFIG: Config, collisi
     }
 }
 
-function spriteSheetFn(ctx: CanvasRenderingContext2D, sheet: string, CONFIG: Config, collisionMap: any) {
+async function spriteSheetFn(ctx: CanvasRenderingContext2D, sheet: string, CONFIG: Config, collisionMap: Coord[]) {
 
     const { SIZE } = CONFIG;
-    const img = await loadSpriteImage(sheet,sheetX,sheetY, CONFIG);
-    
-    return (sheetX,sheetY, collision: boolean = true)=> async (x,y) =>{
 
+    const spriteSheet = await loadSpriteSheet(sheet);
+
+    return (sheetX, sheetY, collision: boolean = true)=> async (x,y) =>{
+        collisionMap.push([x,y])
+        const img = await loadSpriteFromSheet(spriteSheet, sheetX, sheetY, CONFIG);
         ctx.drawImage(img as any, SIZE * x, SIZE * y, SIZE, SIZE);
     }
 }
